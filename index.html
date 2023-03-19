@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Web Dev Intro</title>
+
   <style>
     .cnt-btn {
       height: 40px;
@@ -16,28 +17,50 @@
     }
   </style>
 </head>
+
 <body>
-  <p>1</p>
   <h1>I am a counter</h1>
+  <input id="user-name" type="text" placeholder="name"></input>
   <h3 id="cnt"></h3>
   <div id="cnt-btn-container">
     <button type="button" id="plus" class="cnt-btn" onclick="plus()">+</button>
     <button type="button" id="minus" class="cnt-btn" onclick="minus()">-</button>
   </div>
   <div>
-    <button type="button" id="save"> save </button>
+    <button type="button" id="fetch" onclick="updateCnt()"> fetch </button>
+    <button type="button" id="save" onclick="saveCount()"> save </button>
   </div>
 
   <script defer>
+    const HOSTNAME = 'localhost';
+    const PORT = 8080
     let cnt = 0;
-    initCnt();
+
+    updateCnt();
     
-    function initCnt() {
-      getCount('aabb').then((cnts) => {
-        console.log('res: ', cnts);
-        cnt = cnts[0].count;
+    function updateCnt() {
+      const userName = getInputName();
+      fetchCount(userName).then((cntInfo) => {
+        console.log('res: ', cntInfo);
+        cnt = cntInfo.count;
         displayCnt(cnt);
       })
+    }
+
+    function fetchCount(userName) {
+      if (!userName || !userName.length) return Promise.resolve({ name: '', count: 0 });
+      return fetch(
+        `http://${HOSTNAME}:${PORT}/counter?name=${userName}`,
+        {
+          method: 'GET',
+          redirect: 'follow',
+          mode:"cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      ).then((response) => response.json())
+      .then(res => res.body);
     }
 
     function displayCnt(num) {
@@ -54,20 +77,8 @@
       displayCnt(cnt);
     }
 
-    function getCount(name) {
-      if (!name) return Promise.resolve({ name: '', count: 0 });
-      return fetch(
-        `http://localhost:8080/counter?name=${name}`,
-        {
-          method: 'GET',
-          redirect: 'follow',
-          mode:"cors",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      ).then((response) => response.json())
-      .then(res => res.body);
+    function getInputName() {
+      return document.getElementById("user-name").value;
     }
 
   </script>

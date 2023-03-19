@@ -21,16 +21,16 @@ server.on('request', (req, res) => {
     console.log('reqQueryObj: ', reqQueryObj);
   }
 
-  let data = '';
+  let storedData = '';
   let body = null;
 
   if (method === 'GET') {
-    data = fs.readFileSync('./counter.txt', {
+    storedData = fs.readFileSync('./counter.txt', {
       encoding: 'utf-8',
     });
-    console.log('data: ', data);
+    console.log('data: ', storedData);
     if (reqQueryObj) {
-      body = JSON.parse(data).filter(v => v.name === reqQueryObj.name);
+      body = JSON.parse(storedData).filter(v => v.name === reqQueryObj.name)[0];
     } else {
       body = null;
     }
