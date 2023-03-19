@@ -12,6 +12,8 @@ server.listen(PORT, HOSTNAME, () => {
 
 server.on('request', (req, res) => {
   const { headers, method, url } = req;
+  console.log('!!!!! method: ', method);
+  console.log('!!!!! url: ', url);
 
   const reqUrlArr = url.split('?');
   const reqQuery = reqUrlArr[1];
@@ -25,15 +27,13 @@ server.on('request', (req, res) => {
   let body = null;
 
   if (method === 'GET') {
-    storedData = fs.readFileSync('./counter.txt', {
-      encoding: 'utf-8',
-    });
-    console.log('data: ', storedData);
     if (reqQueryObj) {
-      body = JSON.parse(storedData).filter(v => v.name === reqQueryObj.name)[0];
-    } else {
-      body = null;
+      body = getCntFromFile(reqQueryObj.name);
     }
+  }
+
+  if (method === 'POST') {
+
   }
 
   res.on('error', (err) => {
@@ -56,4 +56,14 @@ function parseEqArrToJson(eqArr) {
     obj[sp[0]] = sp[0] == 'count' ? +sp[1] : sp[1];
   });
   return obj;
+}
+
+function getCntFromFile(userName) {
+  if (!userName || !userName.length) return null;
+  const storedData = fs.readFileSync('./counter.txt', {
+    encoding: 'utf-8',
+  });
+  if (!storedData.length) return null;
+  const storedDataArr = JSON.parse(storedData);
+  return storedDataArr.filter(v => v.name === userName)[0] || null;
 }

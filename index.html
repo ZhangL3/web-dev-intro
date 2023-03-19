@@ -27,8 +27,8 @@
     <button type="button" id="minus" class="cnt-btn" onclick="minus()">-</button>
   </div>
   <div>
-    <button type="button" id="fetch" onclick="updateCnt()"> fetch </button>
-    <button type="button" id="save" onclick="saveCount()"> save </button>
+    <button type="button" id="fetch" onclick="updateCntView()"> fetch </button>
+    <button type="button" id="save" onclick="storeCnt()"> save </button>
   </div>
 
   <script defer>
@@ -36,25 +36,41 @@
     const PORT = 8080
     let cnt = 0;
 
-    updateCnt();
+    updateCntView();
     
-    function updateCnt() {
+    function updateCntView() {
       const userName = getInputName();
-      fetchCount(userName).then((cntInfo) => {
+      fetchCnt(userName).then((cntInfo) => {
         console.log('res: ', cntInfo);
-        cnt = cntInfo.count;
+        if (cntInfo) {
+          cnt = cntInfo.count;
+        } else {
+          cnt = '-'
+        }
         displayCnt(cnt);
       })
     }
 
-    function fetchCount(userName) {
+    function fetchCnt(userName) {
       if (!userName || !userName.length) return Promise.resolve({ name: '', count: 0 });
       return fetch(
         `http://${HOSTNAME}:${PORT}/counter?name=${userName}`,
         {
           method: 'GET',
-          redirect: 'follow',
-          mode:"cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      ).then((response) => response.json())
+      .then(res => res.body);
+    }
+
+    function storeCnt() {
+      const userName = getInputName();
+      return fetch(
+        `http://${HOSTNAME}:${PORT}/counter?name=${userName}&count=${cnt}`,
+        {
+          method: 'POST',
           headers: {
             "Content-Type": "application/json",
           },
