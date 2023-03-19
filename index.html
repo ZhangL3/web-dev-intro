@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .cnt-btn {
+      height: 40px;
+      width: 40px;
+      background-color:coral;
+    }
+    #cnt-btn-container {
+      background-color: chartreuse;
+    }
+  </style>
+</head>
+<body>
+  <p>1</p>
+  <h1>I am a counter</h1>
+  <h3 id="cnt"></h3>
+  <div id="cnt-btn-container">
+    <button type="button" id="plus" class="cnt-btn" onclick="plus()">+</button>
+    <button type="button" id="minus" class="cnt-btn" onclick="minus()">-</button>
+  </div>
+  <div>
+    <button type="button" id="save"> save </button>
+  </div>
+
+  <script defer>
+    let cnt = 0;
+    initCnt();
+    
+    function initCnt() {
+      getCount('aabb').then((cnts) => {
+        console.log('res: ', cnts);
+        cnt = cnts[0].count;
+        displayCnt(cnt);
+      })
+    }
+
+    function displayCnt(num) {
+      document.getElementById("cnt").innerHTML = num;
+    }
+
+    function plus() {
+      cnt = cnt + 1
+      displayCnt(cnt);
+    }
+
+    function minus() {
+      cnt = cnt - 1;
+      displayCnt(cnt);
+    }
+
+    function getCount(name) {
+      if (!name) return Promise.resolve({ name: '', count: 0 });
+      return fetch(
+        `http://localhost:8080/counter?name=${name}`,
+        {
+          method: 'GET',
+          redirect: 'follow',
+          mode:"cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      ).then((response) => response.json())
+      .then(res => res.body);
+    }
+
+  </script>
+</body>
+</html>
