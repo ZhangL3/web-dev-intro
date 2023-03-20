@@ -22,18 +22,19 @@ server.on('request', (req, res) => {
     reqQueryObj = parseEqArrToJson(reqQuery);
     console.log('reqQueryObj: ', reqQueryObj);
   }
+  const { name, count } = reqQueryObj;
 
   let storedData = '';
   let body = null;
 
   if (method === 'GET') {
     if (reqQueryObj) {
-      body = getCntFromFile(reqQueryObj.name);
+      body = getCntOfUserFromFile(name);
     }
   }
 
   if (method === 'POST') {
-
+    body = storeCntOfUserIntoFile(name, count);
   }
 
   res.on('error', (err) => {
@@ -43,12 +44,10 @@ server.on('request', (req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
   const responseBody = { headers, method, url, body };
-  console.log('responseBody: ', responseBody);
   res.end(JSON.stringify(responseBody));
 })
 
 function parseEqArrToJson(eqArr) {
-  console.log('eqArr: ', eqArr);
   const obj = {};
   const arr = eqArr.split('&');
   arr.forEach(q => {
@@ -58,12 +57,33 @@ function parseEqArrToJson(eqArr) {
   return obj;
 }
 
-function getCntFromFile(userName) {
-  if (!userName || !userName.length) return null;
+function getAllCountFromFile() {
   const storedData = fs.readFileSync('./counter.txt', {
     encoding: 'utf-8',
   });
   if (!storedData.length) return null;
-  const storedDataArr = JSON.parse(storedData);
+  return JSON.parse(storedData);
+}
+
+function getCntOfUserFromFile(userName) {
+  if (!userName || !userName.length) return null;
+  const storedDataArr = getAllCountFromFile();
   return storedDataArr.filter(v => v.name === userName)[0] || null;
+}
+
+function storeCntOfUserIntoFile(name, count) {
+    if (!name || !name.length) return null;
+    const storedDataArr = getAllCountFromFile();
+    const indOfUser = storedDataArr.findIndex(i => i.name === name);
+    if (indOfUser < 0) {
+      storedDataArr.push({ name, count });
+    } else {
+      storedDataArr[indOfUser].count = count;
+    }
+    try {
+      fs.writeFileSync('./counter.txt', JSON.stringify(storedDataArr));
+      return { name, count };
+    } catch (error) {
+      console.log('error: ', error);
+    }
 }
