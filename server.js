@@ -18,23 +18,28 @@ server.on('request', (req, res) => {
   const reqUrlArr = url.split('?');
   const reqQuery = reqUrlArr[1];
   let reqQueryObj = null;
+  let name = '';
+  let count = 0;
   if (reqQuery) {
     reqQueryObj = parseEqArrToJson(reqQuery);
     console.log('reqQueryObj: ', reqQueryObj);
+    name = reqQueryObj.name;
+    count = reqQueryObj.count;
   }
-  const { name, count } = reqQueryObj;
 
   let storedData = '';
   let body = null;
 
   if (method === 'GET') {
-    if (reqQueryObj) {
+    if (name) {
       body = getCntOfUserFromFile(name);
     }
   }
 
   if (method === 'POST') {
-    body = storeCntOfUserIntoFile(name, count);
+    if (name) {
+      body = storeCntOfUserIntoFile(name, count);
+    }
   }
 
   res.on('error', (err) => {
