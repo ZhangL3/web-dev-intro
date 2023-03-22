@@ -1,8 +1,24 @@
 const fs = require('fs');
 const http = require('http');
+const mySql = require('mysql');
 
 const HOSTNAME = '127.0.0.1';
 const PORT = 3000;
+const MYSQL_USER = 'dbadmin';
+const MYSQL_PASSWORD = 'sqladmin';
+const DATABASE = 'webdevintro';
+
+const db = mySql.createConnection({
+  host: HOSTNAME,
+  user: MYSQL_USER,
+  password: MYSQL_PASSWORD,
+  database: DATABASE,
+});
+
+db.connect((err) => {
+  if (err) throw err;
+  console.log("MySQL connected!");
+})
 
 const server = http.createServer();
 
@@ -74,6 +90,16 @@ function getCntOfUserFromFile(userName) {
   if (!userName || !userName.length) return null;
   const storedDataArr = getAllCountFromFile();
   return storedDataArr.filter(v => v.name === userName)[0] || null;
+}
+
+function getCntOfUserFromDB(userName) {
+  db.query(
+    `SELECT * FROM user_count WHERE user_name = ${userName}`,
+    (err, result) => {
+      if (err) throw err;
+      console.log()
+    }
+  )
 }
 
 function storeCntOfUserIntoFile(name, count) {
