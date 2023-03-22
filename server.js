@@ -49,6 +49,9 @@ server.on('request', (req, res) => {
   if (method === 'GET') {
     if (name) {
       body = getCntOfUserFromFile(name);
+      getCntOfUserFromDB(name).then((res) => {
+        console.log('res: ', res);
+      });
     }
   }
 
@@ -93,13 +96,17 @@ function getCntOfUserFromFile(userName) {
 }
 
 function getCntOfUserFromDB(userName) {
-  db.query(
-    `SELECT * FROM user_count WHERE user_name = ${userName}`,
-    (err, result) => {
-      if (err) throw err;
-      console.log()
-    }
-  )
+  return new Promise((resolve, reject) => {
+    db.query(
+      `SELECT * FROM user_count WHERE user_name = ${userName}`,
+      (err, result) => {
+        if (err) reject(err);
+        console.log(result);
+        resolve(result);
+      }
+    )
+    
+  })
 }
 
 function storeCntOfUserIntoFile(name, count) {
