@@ -1,6 +1,6 @@
 const fs = require('fs');
 const http = require('http');
-const mySql = require('mysql');
+// const mySql = require('mysql');
 
 const HOSTNAME = '127.0.0.1';
 const PORT = 3000;
@@ -8,19 +8,20 @@ const MYSQL_USER = 'dbadmin';
 const MYSQL_PASSWORD = 'sqladmin';
 const DATABASE = 'webdevintro';
 
-const db = mySql.createConnection({
-  host: HOSTNAME,
-  user: MYSQL_USER,
-  password: MYSQL_PASSWORD,
-  database: DATABASE,
+// const db = mySql.createConnection({
+//   host: HOSTNAME,
+//   user: MYSQL_USER,
+//   password: MYSQL_PASSWORD,
+//   database: DATABASE,
+// });
+
+// db.connect((err) => {
+//   if (err) throw err;
+//   console.log("MySQL connected!");
+// })
+
+const server = http.createServer((req, res) => {
 });
-
-db.connect((err) => {
-  if (err) throw err;
-  console.log("MySQL connected!");
-})
-
-const server = http.createServer();
 
 server.listen(PORT, HOSTNAME, () => {
   console.log(`Server running at http://${HOSTNAME}:${PORT}/`);
@@ -30,6 +31,7 @@ server.on('request', (req, res) => {
   const { headers, method, url } = req;
 
   const reqUrlArr = url.split('?');
+  const reqPath = reqUrlArr[0];
   const reqQuery = reqUrlArr[1];
   let reqQueryObj = null;
   let name = '';
@@ -44,7 +46,16 @@ server.on('request', (req, res) => {
   let body = null;
 
   if (method === 'GET') {
-    if (name) {
+    if (reqPath === '/index') {
+      fs.readFile('./index.html', (err, html) => {
+        if (err) throw err;
+        res.writeHeader(200, {"Content-Type": "text/html"});  
+        res.write(html);  
+        res.end();
+      })
+    }
+
+    if (reqPath === '/counter' && name) {
       getCnt(name).then((data) => {
         body = data;
         res.statusCode = 200;
@@ -56,7 +67,7 @@ server.on('request', (req, res) => {
   }
 
   if (method === 'POST') {
-    if (name) {
+    if (reqPath === '/counter' && name) {
       updateCnt(name, count).then((data) => {
         body = data;
         res.statusCode = 200;
@@ -74,15 +85,15 @@ server.on('request', (req, res) => {
 })
 
 async function getCnt(name) {
-  // return getCntOfUserFromFile(name);
-  const res = await getCntOfUserFromDB(name);
-  if (res && res.length) return res[0];
+  return getCntOfUserFromFile(name);
+  // const res = await getCntOfUserFromDB(name);
+  // if (res && res.length) return res[0];
   return null;
 }
 
 async function updateCnt(name, cnt) {
-  // return storeCntOfUserIntoFile(name, cnt);
-  return storeCntOfUserIntoDB(name, cnt);
+  return storeCntOfUserIntoFile(name, cnt);
+  // return storeCntOfUserIntoDB(name, cnt);
 }
 
 function parseEqArrToJson(eqArr) {
