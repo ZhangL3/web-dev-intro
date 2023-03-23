@@ -78,10 +78,12 @@ server.on('request', (req, res) => {
     }
   }
 
-  res.on('error', (err) => {
-      console.error(err);
-  });
-
+  process.on('uncaughtException', function (err) {
+    res.statusCode = 500;
+    body = err;
+    const responseBody = { headers, method, url, body };
+    res.end(JSON.stringify(responseBody));
+  })
 })
 
 async function getCnt(name) {
