@@ -28,8 +28,6 @@ server.listen(PORT, HOSTNAME, () => {
 
 server.on('request', (req, res) => {
   const { headers, method, url } = req;
-  console.log('!!!!! method: ', method);
-  console.log('!!!!! url: ', url);
 
   const reqUrlArr = url.split('?');
   const reqQuery = reqUrlArr[1];
@@ -38,7 +36,6 @@ server.on('request', (req, res) => {
   let count = 0;
   if (reqQuery) {
     reqQueryObj = parseEqArrToJson(reqQuery);
-    console.log('reqQueryObj: ', reqQueryObj);
     name = reqQueryObj.name;
     count = reqQueryObj.count;
   }
@@ -48,16 +45,25 @@ server.on('request', (req, res) => {
 
   if (method === 'GET') {
     if (name) {
-      body = getCntOfUserFromFile(name);
-      getCntOfUserFromDB(name).then((res) => {
-        console.log('res: ', res);
+      getCnt(name).then((data) => {
+        body = data;
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        const responseBody = { headers, method, url, body };
+        res.end(JSON.stringify(responseBody));
       });
     }
   }
 
   if (method === 'POST') {
     if (name) {
-      body = storeCntOfUserIntoFile(name, count);
+      updateCnt(name, count).then((data) => {
+        body = data;
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        const responseBody = { headers, method, url, body };
+        res.end(JSON.stringify(responseBody));
+      });
     }
   }
 
@@ -65,11 +71,19 @@ server.on('request', (req, res) => {
       console.error(err);
   });
 
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'application/json');
-  const responseBody = { headers, method, url, body };
-  res.end(JSON.stringify(responseBody));
 })
+
+async function getCnt(name) {
+  // return getCntOfUserFromFile(name);
+  const res = await getCntOfUserFromDB(name);
+  if (res && res.length) return res[0];
+  return null;
+}
+
+async function updateCnt(name, cnt) {
+  // return storeCntOfUserIntoFile(name, cnt);
+  return storeCntOfUserIntoDB(name, cnt);
+}
 
 function parseEqArrToJson(eqArr) {
   const obj = {};
@@ -95,18 +109,9 @@ function getCntOfUserFromFile(userName) {
   return storedDataArr.filter(v => v.name === userName)[0] || null;
 }
 
-function getCntOfUserFromDB(userName) {
-  return new Promise((resolve, reject) => {
-    db.query(
-      `SELECT * FROM user_count WHERE user_name = ${userName}`,
-      (err, result) => {
-        if (err) reject(err);
-        console.log(result);
-        resolve(result);
-      }
-    )
-    
-  })
+async function getCntOfUserFromDB(userName) {
+  const query = `SELECT * FROM user_count WHERE user_name = '${userName}'`;
+  return runQuery(query);
 }
 
 function storeCntOfUserIntoFile(name, count) {
@@ -124,4 +129,22 @@ function storeCntOfUserIntoFile(name, count) {
     } catch (error) {
       console.log('error: ', error);
     }
+}
+
+async function storeCntOfUserIntoDB(name, count) {
+  const query = `update user_count set count = ${count} where user_name = '${name}';`;
+  const res = await runQuery(query);
+  if (res) return res.affectedRows;
+}
+
+async function runQuery(query) {
+  return new Promise((resolve, reject) => {
+    db.query(
+      query,
+      (err, result) => {
+        if (err) reject(err);
+        resolve(result);
+      }
+    )
+  })
 }
