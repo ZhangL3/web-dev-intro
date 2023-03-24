@@ -1,15 +1,19 @@
 const fs = require('fs');
 const http = require('http');
-const {
-  connectDB,
-  getCntOfUserFromDB,
-  storeCntOfUserIntoDB,
-} = require('./db');
+
+/**
+ * Import functions from db interface
+ */
+// const {
+//   connectDB,
+//   getCntOfUserFromDB,
+//   storeCntOfUserIntoDB,
+// } = require('./db');
 
 /**
  * Connect to MySQL before use it
  */
-connectDB();
+// connectDB();
 
 const HOSTNAME = '127.0.0.1';
 const PORT = 3000;
@@ -36,7 +40,6 @@ server.on('request', (req, res) => {
     count = reqQueryObj.count;
   }
 
-  let storedData = '';
   let body = null;
 
   if (method === 'GET') {
@@ -81,13 +84,13 @@ server.on('request', (req, res) => {
 })
 
 async function getCnt(name) {
-  // return getCntOfUserFromFile(name);
+  return getCntOfUserFromFile(name);
   /**
    * Get count from DB
    */
-  const res = await getCntOfUserFromDB(name);
-  if (res && res.length) return res[0];
-  else return 0;
+  // const res = await getCntOfUserFromDB(name);
+  // if (res && res.length) return res[0];
+  // else return 0;
 }
 
 /**
@@ -98,13 +101,13 @@ async function getCnt(name) {
  * @returns 
  */
 async function updateCnt(name, cnt) {
-  // return storeCntOfUserIntoFile(name, cnt);
+  return storeCntOfUserIntoFile(name, cnt);
   /**
    * Updte count in DB
    */
-  const res = await storeCntOfUserIntoDB(name, cnt);
-  if (res) return res;
-  throw new Error('update count in DB failed');
+  // const res = await storeCntOfUserIntoDB(name, cnt);
+  // if (res) return res;
+  // throw new Error('update count in DB failed');
 }
 
 function parseEqArrToJson(eqArr) {
