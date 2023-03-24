@@ -1,24 +1,18 @@
 const fs = require('fs');
 const http = require('http');
-const mySql = require('mysql');
+const {
+  connectDB,
+  getCntOfUserFromDB,
+  storeCntOfUserIntoDB,
+} = require('./db');
+
+/**
+ * Connect to MySQL before use it
+ */
+connectDB();
 
 const HOSTNAME = '127.0.0.1';
 const PORT = 3000;
-const MYSQL_USER = 'dbadmin';
-const MYSQL_PASSWORD = 'sqladmin';
-const DATABASE = 'webdevintro';
-
-const db = mySql.createConnection({
-  host: HOSTNAME,
-  user: MYSQL_USER,
-  password: MYSQL_PASSWORD,
-  database: DATABASE,
-});
-
-db.connect((err) => {
-  if (err) throw err;
-  console.log("MySQL connected!");
-})
 
 const server = http.createServer((req, res) => {
 });
@@ -88,16 +82,29 @@ server.on('request', (req, res) => {
 
 async function getCnt(name) {
   // return getCntOfUserFromFile(name);
+  /**
+   * Get count from DB
+   */
   const res = await getCntOfUserFromDB(name);
   if (res && res.length) return res[0];
-  return null;
+  else return 0;
 }
 
+/**
+ * If name exists already, updte its count,
+ * if not, insert a new one
+ * @param {string} name 
+ * @param {number} cnt 
+ * @returns 
+ */
 async function updateCnt(name, cnt) {
   // return storeCntOfUserIntoFile(name, cnt);
-  const res = storeCntOfUserIntoDB(name, cnt);
+  /**
+   * Updte count in DB
+   */
+  const res = await storeCntOfUserIntoDB(name, cnt);
   if (res) return res;
-  return null;
+  throw new Error('update count in DB failed');
 }
 
 function parseEqArrToJson(eqArr) {
@@ -124,11 +131,6 @@ function getCntOfUserFromFile(userName) {
   return storedDataArr.filter(v => v.name === userName)[0] || null;
 }
 
-async function getCntOfUserFromDB(userName) {
-  const query = `SELECT * FROM user_count WHERE user_name = '${userName}'`;
-  return runQuery(query);
-}
-
 function storeCntOfUserIntoFile(name, count) {
     if (!name || !name.length) return null;
     const storedDataArr = getAllCountFromFile();
@@ -144,22 +146,4 @@ function storeCntOfUserIntoFile(name, count) {
     } catch (error) {
       console.log('error: ', error);
     }
-}
-
-async function storeCntOfUserIntoDB(name, count) {
-  const query = `INSERT INTO user_count (user_name, count) VALUES ('${name}', ${count}) ON DUPLICATE KEY UPDATE count=${count};`;
-  const res = await runQuery(query);
-  if (res) return res.affectedRows;
-}
-
-async function runQuery(query) {
-  return new Promise((resolve, reject) => {
-    db.query(
-      query,
-      (err, result) => {
-        if (err) reject(err);
-        resolve(result);
-      }
-    )
-  })
 }
