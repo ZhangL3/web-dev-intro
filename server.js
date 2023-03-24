@@ -1,6 +1,6 @@
 const fs = require('fs');
 const http = require('http');
-// const mySql = require('mysql');
+const mySql = require('mysql');
 
 const HOSTNAME = '127.0.0.1';
 const PORT = 3000;
@@ -8,17 +8,17 @@ const MYSQL_USER = 'dbadmin';
 const MYSQL_PASSWORD = 'sqladmin';
 const DATABASE = 'webdevintro';
 
-// const db = mySql.createConnection({
-//   host: HOSTNAME,
-//   user: MYSQL_USER,
-//   password: MYSQL_PASSWORD,
-//   database: DATABASE,
-// });
+const db = mySql.createConnection({
+  host: HOSTNAME,
+  user: MYSQL_USER,
+  password: MYSQL_PASSWORD,
+  database: DATABASE,
+});
 
-// db.connect((err) => {
-//   if (err) throw err;
-//   console.log("MySQL connected!");
-// })
+db.connect((err) => {
+  if (err) throw err;
+  console.log("MySQL connected!");
+})
 
 const server = http.createServer((req, res) => {
 });
@@ -46,7 +46,7 @@ server.on('request', (req, res) => {
   let body = null;
 
   if (method === 'GET') {
-    if (reqPath === '/index') {
+    if (reqPath === '/index' || reqPath === '/') {
       fs.readFile('./index.html', (err, html) => {
         if (err) throw err;
         res.writeHeader(200, {"Content-Type": "text/html"});  
@@ -66,7 +66,7 @@ server.on('request', (req, res) => {
     }
   }
 
-  if (method === 'POST') {
+  if (method === 'PATCH') {
     if (reqPath === '/counter' && name) {
       updateCnt(name, count).then((data) => {
         body = data;
@@ -87,15 +87,17 @@ server.on('request', (req, res) => {
 })
 
 async function getCnt(name) {
-  return getCntOfUserFromFile(name);
-  // const res = await getCntOfUserFromDB(name);
-  // if (res && res.length) return res[0];
+  // return getCntOfUserFromFile(name);
+  const res = await getCntOfUserFromDB(name);
+  if (res && res.length) return res[0];
   return null;
 }
 
 async function updateCnt(name, cnt) {
-  return storeCntOfUserIntoFile(name, cnt);
-  // return storeCntOfUserIntoDB(name, cnt);
+  // return storeCntOfUserIntoFile(name, cnt);
+  const res = storeCntOfUserIntoDB(name, cnt);
+  if (res) return res;
+  return null;
 }
 
 function parseEqArrToJson(eqArr) {
@@ -145,7 +147,7 @@ function storeCntOfUserIntoFile(name, count) {
 }
 
 async function storeCntOfUserIntoDB(name, count) {
-  const query = `update user_count set count = ${count} where user_name = '${name}';`;
+  const query = `INSERT INTO user_count (user_name, count) VALUES ('${name}', ${count}) ON DUPLICATE KEY UPDATE count=${count};`;
   const res = await runQuery(query);
   if (res) return res.affectedRows;
 }

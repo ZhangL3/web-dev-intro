@@ -33,7 +33,7 @@
 
   <script defer>
     const HOSTNAME = 'localhost';
-    const PORT = 8080
+    const PORT = 3000;
     let cnt = 0;
 
     updateCntView();
@@ -70,7 +70,7 @@
       return fetch(
         `http://${HOSTNAME}:${PORT}/counter?name=${userName}&count=${cnt}`,
         {
-          method: 'POST',
+          method: 'PATCH',
           headers: {
             "Content-Type": "application/json",
           },
