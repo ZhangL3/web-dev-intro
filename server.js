@@ -15,7 +15,8 @@ const http = require('http');
  */
 // connectDB();
 
-const HOSTNAME = '127.0.0.1';
+// const HOSTNAME = '127.0.0.1';
+const HOSTNAME = '192.168.178.63';
 const PORT = 3000;
 
 const server = http.createServer((req, res) => {
