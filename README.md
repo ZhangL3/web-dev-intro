@@ -1,13 +1,20 @@
 # web-dev-intro
+
 Introduce how a web side works though simple demos
 
-run server:
+- run server:
 
-```sh
-cd [path]
-node server.js
-```
+  ```sh
+  cd [path]
+  node server.js
+  ```
 
-visit:
+- visit: http://localhost:3000
 
-http://localhost:3000/index
+- structure:
+
+  - open page
+    ![open page](./doc/openPage.png)
+
+  - handle data
+    ![open page](./doc/handleData.png)
